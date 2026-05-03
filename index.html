@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Topper's Cave</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;width:100%;overflow:hidden}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Noto Sans,sans-serif;background:var(--bg);color:var(--tx);font-size:14px;line-height:1.5;transition:background .3s,color .3s}
+:root{--bg:#0D1117;--bg2:#161B22;--bg3:#1C2128;--bd:#30363D;--tx:#E6EDF3;--tx2:#8B949E;--tx3:#484F58;--ac:#4CAF50;--acl:#0D2414;--act:#6BCB77;--am:#FFA500;--aml:#1A1200;--rd:#F85149;--rdl:#1A0800;--bl:#58A6FF;--bll:#0D1F40;--pu:#BC8CFF;--pul:#1A0D40;--r:14px;--rs:10px;--sh:0 4px 24px rgba(0,0,0,.5)}
+[data-theme=light]{--bg:#F0F4F8;--bg2:#FFFFFF;--bg3:#E8EEF5;--bd:#C8D3E0;--tx:#1A202C;--tx2:#4A5568;--tx3:#A0AEC0;--acl:#E8F5E9;--act:#2E7D32;--aml:#FFF8E1;--rdl:#FFEBEE;--bll:#E3F2FD;--pul:#F3E5F5;--sh:0 4px 24px rgba(0,0,0,.1)}
+[data-theme=ocean]{--bg:#061220;--bg2:#0A1E30;--bg3:#0F2840;--bd:#1A3A55;--tx:#B8D4F0;--tx2:#6A9DC0;--tx3:#2A5070;--ac:#0EA5E9;--acl:#051520;--act:#38BDF8;--sh:0 4px 24px rgba(0,0,0,.6)}
+[data-theme=purple]{--bg:#0F0A1E;--bg2:#1A1030;--bg3:#231540;--bd:#3D2870;--tx:#E0D0FF;--tx2:#9070C0;--tx3:#5040A0;--ac:#A855F7;--acl:#1A0A30;--act:#C084FC;--sh:0 4px 24px rgba(0,0,0,.6)}
+
+/* SPLASH */
+#splash{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;transition:opacity .8s ease}
+#splash.out{opacity:0;pointer-events:none}
+.sp-cave{font-size:44px;font-weight:800;background:linear-gradient(135deg,var(--ac),var(--bl));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-family:serif;letter-spacing:-1px;animation:spu 1s ease forwards}
+.sp-sub{font-size:13px;color:var(--tx2);margin-top:6px;animation:spu 1s .5s both}
+.sp-bar{width:120px;height:3px;background:var(--bd);border-radius:2px;margin-top:24px;overflow:hidden;animation:spu 1s .3s both}
+.sp-fill{height:100%;background:linear-gradient(90deg,var(--ac),var(--bl));border-radius:2px;animation:sfill 2.2s ease forwards}
+@keyframes spu{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes sfill{from{width:0}to{width:100%}}
+
+/* LAYOUT */
+#app{height:100vh;display:flex;flex-direction:column;overflow:hidden}
+.topbar{padding:12px 16px 0;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.logo{display:flex;align-items:center;gap:8px}
+.logo-ic{width:34px;height:34px;background:linear-gradient(135deg,var(--ac),var(--bl));border-radius:10px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(74,200,80,.3)}
+.logo-tx{font-size:17px;font-weight:700;background:linear-gradient(135deg,var(--act),var(--bl));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-family:serif}
+.topacts{display:flex;gap:6px}
+.icbtn{width:34px;height:34px;border-radius:10px;background:var(--bg2);border:.5px solid var(--bd);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--tx2)}
+.icbtn:active{transform:scale(.94)}
+
+.content{flex:1;overflow-y:auto;overflow-x:hidden;padding:12px 14px 16px;-webkit-overflow-scrolling:touch}
+.content::-webkit-scrollbar{display:none}
+.page{display:none}
+.page.on{display:block;animation:pin .2s ease}
+@keyframes pin{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* BOTTOM NAV */
+.bnav{display:flex;background:var(--bg2);border-top:.5px solid var(--bd);flex-shrink:0;padding-bottom:env(safe-area-inset-bottom)}
+.bni{flex:1;display:flex;flex-direction:column;align-items:center;padding:9px 2px 7px;cursor:pointer;gap:2px;color:var(--tx3);transition:color .15s}
+.bni.on{color:var(--ac)}
+.bni svg{width:20px;height:20px}
+.bni-lbl{font-size:9px;font-weight:600;letter-spacing:.3px}
+
+/* CARDS */
+.card{background:var(--bg2);border:.5px solid var(--bd);border-radius:var(--r);padding:14px;margin-bottom:12px;box-shadow:var(--sh)}
+.card-accent{border-color:var(--ac)}
+.ct{font-size:15px;font-weight:600;color:var(--tx);margin-bottom:12px}
+.sl{font-size:10px;color:var(--tx2);margin-bottom:5px;margin-top:10px;text-transform:uppercase;letter-spacing:.8px;font-weight:600}
+
+/* FORMS */
+select,input[type=number],input[type=text]{width:100%;padding:10px 12px;border:.5px solid var(--bd);border-radius:var(--rs);background:var(--bg3);color:var(--tx);font-size:14px;font-family:inherit;-webkit-appearance:none;outline:none}
+select:focus,input:focus{border-color:var(--ac)}
+.chipw{display:flex;gap:6px;flex-wrap:wrap;margin-top:5px}
+.chip{padding:6px 12px;border:.5px solid var(--bd);border-radius:20px;font-size:12px;cursor:pointer;background:var(--bg3);color:var(--tx2);user-select:none;transition:all .15s}
+.chip.on{background:var(--acl);border-color:var(--ac);color:var(--act);font-weight:500}
+.chip:active{transform:scale(.95)}
+.sg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}
+.sc{padding:10px;border:.5px solid var(--bd);border-radius:var(--rs);font-size:13px;cursor:pointer;background:var(--bg3);color:var(--tx2);text-align:center;user-select:none;transition:all .15s}
+.sc.on{background:var(--acl);border-color:var(--ac);color:var(--act);font-weight:500}
+
+/* BUTTONS */
+.btn{padding:11px 16px;border-radius:var(--rs);font-size:14px;cursor:pointer;font-family:inherit;font-weight:600;border:none;width:100%;margin-top:10px;transition:all .15s;letter-spacing:.3px}
+.btn:active{transform:scale(.97)}
+.btp{background:linear-gradient(135deg,var(--ac),#2E7D32);color:#fff;box-shadow:0 3px 12px rgba(74,200,80,.3)}
+.bts{background:var(--bg3);color:var(--tx);border:.5px solid var(--bd)}
+.btd{background:linear-gradient(135deg,var(--rd),#b71c1c);color:#fff}
+.btam{background:linear-gradient(135deg,var(--am),#e65100);color:#fff}
+.brow{display:flex;gap:8px;margin-top:10px}
+.brow .btn{margin-top:0}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;letter-spacing:.2px}
+.bg{background:var(--acl);color:var(--act)}
+.ba{background:var(--aml);color:var(--am)}
+.br{background:var(--rdl);color:var(--rd)}
+.bb{background:var(--bll);color:var(--bl)}
+.bp{background:var(--pul);color:var(--pu)}
+
+/* PROGRESS */
+.pb{height:6px;background:var(--bg3);border-radius:3px;overflow:hidden}
+.pf{height:100%;border-radius:3px;transition:width .4s ease}
+.pfg{background:linear-gradient(90deg,var(--ac),#81C784)}
+.pfa{background:linear-gradient(90deg,var(--am),#FFB74D)}
+.pfb{background:linear-gradient(90deg,var(--bl),#90CAF9)}
+
+/* STATS */
+.stg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.sb{background:var(--bg3);border-radius:var(--rs);padding:12px;text-align:center;border:.5px solid var(--bd)}
+.sn{font-size:24px;font-weight:700;background:linear-gradient(135deg,var(--act),var(--bl));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.slb{font-size:10px;color:var(--tx2);margin-top:2px;font-weight:500}
+
+/* TASKS */
+.ti{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:.5px solid var(--bd)}
+.ti:last-child{border-bottom:none}
+.tc{min-width:20px;height:20px;border:1.5px solid var(--bd);border-radius:6px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px;margin-top:1px;flex-shrink:0;transition:all .15s}
+.tc.dn{background:var(--ac);border-color:var(--ac);color:#fff}
+.tt{font-size:13px;color:var(--tx);line-height:1.4}
+.tt.st{color:var(--tx3);text-decoration:line-through}
+.sd{width:8px;height:8px;border-radius:3px;flex-shrink:0;margin-top:5px}
+
+/* CHAPTER LIST */
+.chs{max-height:280px;overflow-y:auto}
+.chs::-webkit-scrollbar{width:2px}
+.chs::-webkit-scrollbar-thumb{background:var(--bd);border-radius:1px}
+.chi{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:.5px solid var(--bd);font-size:13px}
+.chi:last-child{border-bottom:none}
+.chi input[type=checkbox]{width:16px;height:16px;accent-color:var(--ac);cursor:pointer;flex-shrink:0}
+
+/* DAY CARDS */
+.dc{border:.5px solid var(--bd);border-radius:var(--r);padding:12px;margin-bottom:10px;background:var(--bg2)}
+.dc.tdy{border-color:var(--ac);box-shadow:0 0 12px rgba(74,200,80,.15)}
+.dh{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+
+/* TIMER */
+.tw{text-align:center;padding:20px 0}
+.tn{font-size:68px;font-weight:200;background:linear-gradient(135deg,var(--tx),var(--act));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:-4px;font-variant-numeric:tabular-nums;line-height:1}
+.tph{font-size:12px;color:var(--tx2);margin-top:6px;font-weight:500}
+.pdots{display:flex;gap:8px;justify-content:center;margin:14px 0}
+.pd{width:10px;height:10px;border-radius:50%;background:var(--bg3);border:1.5px solid var(--bd)}
+.pd.dnd{background:var(--ac);border-color:var(--ac);box-shadow:0 0 6px rgba(74,200,80,.5)}
+.pd.acd{background:var(--am);border-color:var(--am)}
+
+/* MCQ POP-UP OVERLAY */
+.mcq-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:500;display:flex;align-items:flex-end;justify-content:center;animation:mfin .2s ease}
+@keyframes mfin{from{opacity:0}to{opacity:1}}
+.mcq-sheet{background:var(--bg2);border-radius:20px 20px 0 0;padding:16px 16px 32px;width:100%;max-width:560px;border-top:.5px solid var(--bd);box-shadow:0 -8px 32px rgba(0,0,0,.5);animation:msu .25s ease}
+@keyframes msu{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.mcq-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.mcq-tbar{height:4px;background:var(--bd);border-radius:2px;overflow:hidden;margin-bottom:12px}
+.mcq-tfill{height:100%;border-radius:2px;transition:width .1s linear;background:linear-gradient(90deg,var(--ac),var(--bl))}
+.mcq-q{font-size:15px;font-weight:500;color:var(--tx);line-height:1.6;margin-bottom:14px}
+.mcq-opts{display:flex;flex-direction:column;gap:8px}
+.mcq-opt{padding:11px 14px;border:1.5px solid var(--bd);border-radius:var(--rs);font-size:14px;cursor:pointer;background:var(--bg3);color:var(--tx);text-align:left;font-family:inherit;line-height:1.4;transition:all .15s;font-weight:500}
+.mcq-opt:active:not(:disabled){transform:scale(.98)}
+.mcq-opt.ok{background:var(--acl);border-color:var(--ac);color:var(--act)}
+.mcq-opt.ng{background:var(--rdl);border-color:var(--rd);color:var(--rd)}
+.mcq-opt.rv{background:var(--acl);border-color:var(--ac);color:var(--act)}
+.mcq-opt:disabled{cursor:default}
+.mcq-res{padding:10px 13px;border-radius:var(--rs);font-size:12px;margin-top:10px;line-height:1.5;font-weight:500}
+.mrok{background:var(--acl);color:var(--act)}
+.mrng{background:var(--rdl);color:var(--rd)}
+
+/* INFO PAGE */
+.ir{display:flex;justify-content:space-between;align-items:flex-start;padding:8px 0;border-bottom:.5px solid var(--bd);font-size:13px;gap:8px}
+.ir:last-child{border-bottom:none}
+.ik{color:var(--tx2);flex-shrink:0;min-width:90px;font-weight:500}
+.gg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.gbox{text-align:center;padding:10px;border-radius:var(--rs);background:var(--bg3);border:.5px solid var(--bd)}
+
+/* THEME MODAL */
+.mo-ov{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:999;display:none;align-items:flex-end}
+.mo-ov.show{display:flex}
+.mo-sh{background:var(--bg2);border-radius:20px 20px 0 0;padding:20px 16px 36px;width:100%;border-top:.5px solid var(--bd);animation:msu .25s ease}
+.tg{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.to{padding:14px;border-radius:var(--rs);border:1.5px solid var(--bd);cursor:pointer;text-align:center;font-size:13px;color:var(--tx2);transition:all .15s;font-weight:500}
+.to.at{border-color:var(--ac);color:var(--act);background:var(--acl)}
+.tsw{width:28px;height:28px;border-radius:8px;margin:0 auto 8px}
+
+/* STOREHOUSE */
+.store-card{border-radius:var(--r);padding:18px;margin-bottom:14px;cursor:pointer;transition:transform .15s,box-shadow .15s;position:relative;overflow:hidden;display:block;text-decoration:none}
+.store-card:active{transform:scale(.97)}
+.store-card-1{background:linear-gradient(135deg,#1a2a1a,#0a3a1a);border:1px solid var(--ac)}
+.store-card-2{background:linear-gradient(135deg,#1a1a3a,#0a1a4a);border:1px solid var(--bl)}
+.store-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.05),transparent)}
+.store-icon{font-size:28px;margin-bottom:10px}
+.store-title{font-size:16px;font-weight:700;color:#fff;margin-bottom:8px}
+.store-features{list-style:none;padding:0}
+.store-features li{font-size:13px;color:rgba(255,255,255,.8);padding:2px 0;font-weight:500}
+.store-arrow{position:absolute;right:16px;top:50%;transform:translateY(-50%);font-size:22px;color:rgba(255,255,255,.4)}
+.store-badge{display:inline-block;background:rgba(255,255,255,.15);border-radius:20px;padding:3px 10px;font-size:11px;color:#fff;font-weight:600;margin-top:8px;backdrop-filter:blur(4px)}
+
+/* ABOUT */
+.ab-center{text-align:center;padding:2rem 1rem}
+.ab-logo{width:80px;height:80px;background:linear-gradient(135deg,var(--ac),var(--bl));border-radius:22px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;box-shadow:0 8px 24px rgba(74,200,80,.3)}
+
+/* MISC */
+.empty{text-align:center;padding:3rem 1rem;color:var(--tx2)}
+.div{height:.5px;background:var(--bd);margin:12px 0}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
+.section-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.scroll-w{max-height:400px;overflow-y:auto}
+.scroll-w::-webkit-scrollbar{display:none}
+</style>
+</head>
+<body data-theme="dark">
+
+<!-- SPLASH -->
+<div id="splash">
+  <div class="sp-cave">Topper's Cave</div>
+  <div class="sp-sub">HSC Study Tracker · Bangladesh</div>
+  <div class="sp-bar"><div class="sp-fill"></div></div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="topbar">
+    <div class="logo">
+      <div class="logo-ic">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M3 4h12M3 9h8M3 14h10" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
+      </div>
+      <span class="logo-tx">Topper's Cave</span>
+    </div>
+    <div class="topacts">
+      <div class="icbtn" onclick="openTheme()">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="3" stroke="currentColor" stroke-width="1.3"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M2.9 2.9l1.4 1.4M11.7 11.7l1.4 1.4M2.9 13.1l1.4-1.4M11.7 4.3l1.4-1.4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+      </div>
+      <div class="icbtn" onclick="gp('about')">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.3"/><path d="M8 7v5M8 5v.01" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+    <div id="p-home" class="page on"></div>
+    <div id="p-track" class="page"></div>
+    <div id="p-today" class="page"></div>
+    <div id="p-timer" class="page"></div>
+    <div id="p-store" class="page"></div>
+    <div id="p-info" class="page"></div>
+    <div id="p-about" class="page"></div>
+  </div>
+
+  <div class="bnav">
+    <div class="bni on" onclick="gp('home')">
+      <svg viewBox="0 0 20 20" fill="none"><path d="M3 9l7-6 7 6v8a1 1 0 01-1 1H4a1 1 0 01-1-1V9z" stroke="currentColor" stroke-width="1.4"/><path d="M7 18v-6h6v6" stroke="currentColor" stroke-width="1.4"/></svg>
+      <span class="bni-lbl">হোম</span>
+    </div>
+    <div class="bni" onclick="gp('track')">
+      <svg viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M7 10l2 2 4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="bni-lbl">ট্র্যাক</span>
+    </div>
+    <div class="bni" onclick="gp('today')">
+      <svg viewBox="0 0 20 20" fill="none"><rect x="3" y="4" width="14" height="13" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M7 2v3M13 2v3M3 9h14" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+      <span class="bni-lbl">আজকের</span>
+    </div>
+    <div class="bni" onclick="gp('timer')">
+      <svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="11" r="6.5" stroke="currentColor" stroke-width="1.4"/><path d="M10 7.5v3.5l2 1.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M7.5 2h5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+      <span class="bni-lbl">টাইমার</span>
+    </div>
+    <div class="bni" onclick="gp('store')">
+      <svg viewBox="0 0 20 20" fill="none"><path d="M3 6h14M3 10h14M3 14h14" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><rect x="3" y="3" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.4"/></svg>
+      <span class="bni-lbl">Store</span>
+    </div>
+    <div class="bni" onclick="gp('info')">
+      <svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.4"/><path d="M10 9v6M10 7v.01" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      <span class="bni-lbl">তথ্য</span>
+    </div>
+  </div>
+</div>
+
+<!-- MCQ OVERLAY (for break time) -->
+<div id="mcq-overlay" style="display:none"></div>
+
+<!-- THEME MODAL -->
+<div class="mo-ov" id="th-modal" onclick="closeTh(event)">
+  <div class="mo-sh">
+    <div style="font-size:16px;font-weight:700;margin-bottom:16px;color:var(--tx)">থিম বেছে নাও</div>
+    <div class="tg">
+      <div class="to" id="t-dark" onclick="setTh('dark')"><div class="tsw" style="background:linear-gradient(135deg,#161B22,#4CAF50)"></div>ডার্ক</div>
+      <div class="to" id="t-light" onclick="setTh('light')"><div class="tsw" style="background:linear-gradient(135deg,#F0F4F8,#2E7D32)"></div>লাইট</div>
+      <div class="to" id="t-ocean" onclick="setTh('ocean')"><div class="tsw" style="background:linear-gradient(135deg,#061220,#0EA5E9)"></div>ওশান</div>
+      <div class="to" id="t-purple" onclick="setTh('purple')"><div class="tsw" style="background:linear-gradient(135deg,#0F0A1E,#A855F7)"></div>পার্পল</div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===================== SCIENCE MCQ BANK (600 questions) =====================
+const SCIENCE_MCQ = [{"id":1,"subject":"Biology","question":"কোষের শক্তিঘর কোনটি?","options":{"a":"নিউক্লিয়াস","b":"মাইটোকন্ড্রিয়া","c":"রাইবোজোম","d":"লাইসোজোম"},"answer":"b"},{"id":2,"subject":"Biology","question":"প্রোক্যারিওটিক কোষে কোনটি অনুপস্থিত?","options":{"a":"DNA","b":"Ribosome","c":"Nuclear membrane","d":"Cytoplasm"},"answer":"c"},{"id":3,"subject":"Biology","question":"রাইবোজোমের কাজ কী?","options":{"a":"শ্বসন","b":"প্রোটিন সংশ্লেষণ","c":"শক্তি উৎপাদন","d":"বর্জ্য অপসারণ"},"answer":"b"},{"id":4,"subject":"Biology","question":"লাইসোজোমকে কী বলা হয়?","options":{"a":"Power house","b":"Suicide bag","c":"Control center","d":"Protein factory"},"answer":"b"},{"id":5,"subject":"Biology","question":"কোষঝিল্লির প্রকৃতি কী?","options":{"a":"Semi-permeable","b":"Fully permeable","c":"Impermeable","d":"Rigid"},"answer":"a"},{"id":6,"subject":"Biology","question":"মানুষের রক্তের pH কত?","options":{"a":"6.5","b":"7.0","c":"7.4","d":"8.0"},"answer":"c"},{"id":7,"subject":"Biology","question":"RBC এর কাজ কী?","options":{"a":"প্রতিরোধ","b":"অক্সিজেন পরিবহন","c":"জমাট বাঁধা","d":"হরমোন পরিবহন"},"answer":"b"},{"id":8,"subject":"Biology","question":"হৃদপিণ্ডে কয়টি প্রকোষ্ঠ?","options":{"a":"2","b":"3","c":"4","d":"5"},"answer":"c"},{"id":9,"subject":"Biology","question":"হিমোগ্লোবিনে কোন ধাতু থাকে?","options":{"a":"Cu","b":"Fe","c":"Zn","d":"Mg"},"answer":"b"},{"id":10,"subject":"Biology","question":"ইনসুলিনের কাজ কী?","options":{"a":"শর্করা বৃদ্ধি","b":"শর্করা কমানো","c":"হজম","d":"শ্বাস"},"answer":"b"},{"id":11,"subject":"Biology","question":"ফটোসিন্থেসিস কোথায় ঘটে?","options":{"a":"Mitochondria","b":"Chloroplast","c":"Nucleus","d":"Ribosome"},"answer":"b"},{"id":12,"subject":"Biology","question":"জাইলেম পরিবহন করে—","options":{"a":"খাদ্য","b":"পানি","c":"হরমোন","d":"গ্যাস"},"answer":"b"},{"id":13,"subject":"Biology","question":"ফ্লোয়েম পরিবহন করে—","options":{"a":"পানি","b":"খনিজ","c":"খাদ্য","d":"অক্সিজেন"},"answer":"c"},{"id":14,"subject":"Biology","question":"মানুষের ক্রোমোসোম সংখ্যা—","options":{"a":"23","b":"44","c":"46","d":"48"},"answer":"c"},{"id":15,"subject":"Biology","question":"ATP কে বলা হয়—","options":{"a":"হরমোন","b":"শক্তির মুদ্রা","c":"এনজাইম","d":"ভিটামিন"},"answer":"b"},{"id":16,"subject":"Biology","question":"ভিটামিন C এর অভাবে—","options":{"a":"রিকেট","b":"স্কার্ভি","c":"অ্যানিমিয়া","d":"রাতকানা"},"answer":"b"},{"id":17,"subject":"Biology","question":"মানবদেহে হাড়—","options":{"a":"200","b":"206","c":"210","d":"212"},"answer":"b"},{"id":18,"subject":"Biology","question":"RBC আয়ু—","options":{"a":"90","b":"100","c":"120","d":"150"},"answer":"c"},{"id":19,"subject":"Biology","question":"মাইটোকন্ড্রিয়া উৎপন্ন করে—","options":{"a":"Protein","b":"ATP","c":"DNA","d":"RNA"},"answer":"b"},{"id":20,"subject":"Biology","question":"মাইটোসিস ঘটে—","options":{"a":"Gamete","b":"Body cell","c":"Zygote","d":"Spore"},"answer":"b"},{"id":21,"subject":"Biology","question":"RNA তে নেই—","options":{"a":"A","b":"T","c":"G","d":"C"},"answer":"b"},{"id":22,"subject":"Biology","question":"DNA সুগার—","options":{"a":"Ribose","b":"Deoxyribose","c":"Glucose","d":"Fructose"},"answer":"b"},{"id":23,"subject":"Biology","question":"ম্যালেরিয়া—","options":{"a":"Virus","b":"Bacteria","c":"Protozoa","d":"Fungus"},"answer":"c"},{"id":24,"subject":"Biology","question":"রাতকানা—","options":{"a":"Vit A","b":"Vit B","c":"Vit C","d":"Vit D"},"answer":"a"},{"id":25,"subject":"Biology","question":"রিকেট—","options":{"a":"Vit A","b":"Vit B","c":"Vit C","d":"Vit D"},"answer":"d"},{"id":26,"subject":"Biology","question":"থাইরক্সিন—","options":{"a":"Pancreas","b":"Thyroid","c":"Adrenal","d":"Pituitary"},"answer":"b"},{"id":27,"subject":"Biology","question":"পিটুইটারি—","options":{"a":"Master gland","b":"Digestive","c":"Respiratory","d":"Excretory"},"answer":"a"},{"id":28,"subject":"Biology","question":"পাকস্থলীতে—","options":{"a":"HCl","b":"NaCl","c":"KCl","d":"CaCl2"},"answer":"a"},{"id":29,"subject":"Biology","question":"খাদ্য শৃঙ্খল শুরু হয়—","options":{"a":"ভোক্তা","b":"উৎপাদক","c":"বিযোজক","d":"প্রাণী"},"answer":"b"},{"id":30,"subject":"Biology","question":"গ্রিনহাউস গ্যাস—","options":{"a":"O2","b":"CO2","c":"N2","d":"H2"},"answer":"b"},{"id":31,"subject":"Biology","question":"কোষঝিল্লি প্রধানত কী দিয়ে গঠিত?","options":{"a":"Carbohydrate","b":"Protein-lipid","c":"DNA","d":"RNA"},"answer":"b"},{"id":32,"subject":"Biology","question":"ক্লোরোপ্লাস্টের কাজ কী?","options":{"a":"শ্বাসক্রিয়া","b":"প্রকাশ সংশ্লেষণ","c":"পাচন","d":"পরিবহন"},"answer":"b"},{"id":33,"subject":"Biology","question":"জিন কী?","options":{"a":"প্রোটিন","b":"বংশগতির একক","c":"চর্বি","d":"শর্করা"},"answer":"b"},{"id":34,"subject":"Biology","question":"DNA এর পূর্ণরূপ কী?","options":{"a":"Deoxyribo Nucleic Acid","b":"Dynamic Nuclear Acid","c":"Dual Nitrogen Acid","d":"None"},"answer":"a"},{"id":35,"subject":"Biology","question":"মানব হৃদপিণ্ড কয় প্রকোষ্ঠ বিশিষ্ট?","options":{"a":"2","b":"3","c":"4","d":"5"},"answer":"c"},{"id":36,"subject":"Biology","question":"রক্তের লাল রঙের জন্য দায়ী কী?","options":{"a":"WBC","b":"Hemoglobin","c":"Platelet","d":"Plasma"},"answer":"b"},{"id":37,"subject":"Biology","question":"ফুসফুসে গ্যাস বিনিময় কোথায় হয়?","options":{"a":"Trachea","b":"Alveoli","c":"Bronchi","d":"Larynx"},"answer":"b"},{"id":38,"subject":"Biology","question":"কিডনির কাজ কী?","options":{"a":"হরমোন তৈরি","b":"রক্ত পরিশোধন","c":"শ্বাসক্রিয়া","d":"হজম"},"answer":"b"},{"id":39,"subject":"Biology","question":"ইনসুলিন কোথা থেকে নিঃসৃত হয়?","options":{"a":"Liver","b":"Pancreas","c":"Kidney","d":"Heart"},"answer":"b"},{"id":40,"subject":"Biology","question":"স্টোমাটার কাজ—","options":{"a":"খাদ্য","b":"গ্যাস বিনিময়","c":"বৃদ্ধি","d":"সংরক্ষণ"},"answer":"b"},{"id":41,"subject":"Physics","question":"বেগের SI একক কোনটি?","options":{"a":"m","b":"m/s","c":"m/s^2","d":"kg"},"answer":"b"},{"id":42,"subject":"Physics","question":"ত্বরণের একক কী?","options":{"a":"m/s","b":"m/s^2","c":"N","d":"J"},"answer":"b"},{"id":43,"subject":"Physics","question":"নিউটনের ২য় সূত্র কোনটি?","options":{"a":"F=ma","b":"V=IR","c":"E=mc^2","d":"P=VI"},"answer":"a"},{"id":44,"subject":"Physics","question":"কাজের একক কী?","options":{"a":"Watt","b":"Newton","c":"Joule","d":"Pascal"},"answer":"c"},{"id":45,"subject":"Physics","question":"শক্তির SI একক কোনটি?","options":{"a":"Joule","b":"Watt","c":"Volt","d":"Ohm"},"answer":"a"},{"id":46,"subject":"Physics","question":"ক্ষমতার একক কোনটি?","options":{"a":"Joule","b":"Watt","c":"Newton","d":"Ampere"},"answer":"b"},{"id":47,"subject":"Physics","question":"ভরবেগের সূত্র কী?","options":{"a":"mv","b":"ma","c":"v^2","d":"m/v"},"answer":"a"},{"id":48,"subject":"Physics","question":"g এর মান প্রায় কত?","options":{"a":"9.8 m/s^2","b":"10 m/s","c":"8.9 m/s^2","d":"7.8 m/s^2"},"answer":"a"},{"id":49,"subject":"Physics","question":"আলোর বেগ কত?","options":{"a":"3×10^8 m/s","b":"3×10^6 m/s","c":"10^8 m/s","d":"10^6 m/s"},"answer":"a"},{"id":50,"subject":"Physics","question":"ওহমের সূত্র কোনটি?","options":{"a":"V=IR","b":"F=ma","c":"P=VI","d":"E=mc^2"},"answer":"a"},{"id":51,"subject":"Physics","question":"চাপের একক কী?","options":{"a":"Joule","b":"Pascal","c":"Newton","d":"Watt"},"answer":"b"},{"id":52,"subject":"Physics","question":"তরঙ্গের বেগ কী?","options":{"a":"fλ","b":"λ/f","c":"f/λ","d":"v^2"},"answer":"a"},{"id":53,"subject":"Physics","question":"রোধের একক কী?","options":{"a":"Ohm","b":"Volt","c":"Ampere","d":"Watt"},"answer":"a"},{"id":54,"subject":"Physics","question":"চৌম্বক ক্ষেত্রের একক কী?","options":{"a":"Tesla","b":"Newton","c":"Joule","d":"Pascal"},"answer":"a"},{"id":55,"subject":"Physics","question":"বিদ্যুৎ প্রবাহের একক কী?","options":{"a":"Ampere","b":"Volt","c":"Ohm","d":"Watt"},"answer":"a"},{"id":56,"subject":"Physics","question":"তাপের একক কী?","options":{"a":"Joule","b":"Watt","c":"Newton","d":"Volt"},"answer":"a"},{"id":57,"subject":"Physics","question":"তাপমাত্রার SI একক কী?","options":{"a":"Kelvin","b":"Celsius","c":"Fahrenheit","d":"Joule"},"answer":"a"},{"id":58,"subject":"Physics","question":"গতিশক্তির সূত্র কোনটি?","options":{"a":"1/2 mv^2","b":"mv","c":"ma","d":"mgh"},"answer":"a"},{"id":59,"subject":"Physics","question":"স্থিতিশক্তির সূত্র কোনটি?","options":{"a":"mgh","b":"mv^2","c":"F=ma","d":"V=IR"},"answer":"a"},{"id":60,"subject":"Physics","question":"শব্দ তরঙ্গ কোন ধরনের?","options":{"a":"অনুদৈর্ঘ্য","b":"আনুপ্রস্থ","c":"ইলেক্ট্রোম্যাগনেটিক","d":"নাল"},"answer":"a"},{"id":61,"subject":"Physics","question":"শব্দের বেগ সর্বাধিক কোথায়?","options":{"a":"বায়ু","b":"পানি","c":"কঠিন পদার্থ","d":"শূন্যস্থান"},"answer":"c"},{"id":62,"subject":"Physics","question":"সিরিজ সার্কিটে রোধ—","options":{"a":"বাড়ে","b":"কমে","c":"একই থাকে","d":"শূন্য হয়"},"answer":"a"},{"id":63,"subject":"Physics","question":"প্যারালাল সার্কিটে রোধ—","options":{"a":"বাড়ে","b":"কমে","c":"একই থাকে","d":"শূন্য হয়"},"answer":"b"},{"id":64,"subject":"Physics","question":"তাপ পরিবাহিতা কোন মাধ্যমে সর্বাধিক?","options":{"a":"গ্যাস","b":"তরল","c":"কঠিন","d":"শূন্যস্থান"},"answer":"c"},{"id":65,"subject":"Physics","question":"ফ্রিকোয়েন্সি বাড়লে wavelength—","options":{"a":"বাড়ে","b":"কমে","c":"একই","d":"শূন্য"},"answer":"b"},{"id":66,"subject":"Physics","question":"শব্দ শূন্যস্থানে চলতে পারে কি?","options":{"a":"হ্যাঁ","b":"না","c":"কখনো","d":"সবসময়"},"answer":"b"},{"id":67,"subject":"Physics","question":"আলোর প্রতিসরণ ঘটে কেন?","options":{"a":"বেগ পরিবর্তন","b":"ভর পরিবর্তন","c":"শক্তি বৃদ্ধি","d":"চাপ"},"answer":"a"},{"id":68,"subject":"Physics","question":"রোধ দ্বিগুণ হলে কারেন্ট—","options":{"a":"দ্বিগুণ","b":"অর্ধেক","c":"একই","d":"শূন্য"},"answer":"b"},{"id":69,"subject":"Physics","question":"পাওয়ার সূত্র কোনটি?","options":{"a":"VI","b":"IR","c":"Q/t","d":"F=ma"},"answer":"a"},{"id":70,"subject":"Physics","question":"ফটোইলেকট্রিক ইফেক্ট ব্যাখ্যা করেন কে?","options":{"a":"আইনস্টাইন","b":"নিউটন","c":"বোর","d":"ডাল্টন"},"answer":"a"},{"id":71,"subject":"Chemistry","question":"পরমাণু সংখ্যা কী নির্দেশ করে?","options":{"a":"প্রোটন সংখ্যা","b":"নিউট্রন সংখ্যা","c":"ইলেকট্রন সংখ্যা","d":"ভর সংখ্যা"},"answer":"a"},{"id":72,"subject":"Chemistry","question":"ভর সংখ্যা কী?","options":{"a":"p+n","b":"p-e","c":"n-e","d":"p"},"answer":"a"},{"id":73,"subject":"Chemistry","question":"HCl কী ধরনের পদার্থ?","options":{"a":"অ্যাসিড","b":"ক্ষার","c":"লবণ","d":"গ্যাস"},"answer":"a"},{"id":74,"subject":"Chemistry","question":"NaOH কী?","options":{"a":"অ্যাসিড","b":"ক্ষার","c":"লবণ","d":"অক্সাইড"},"answer":"b"},{"id":75,"subject":"Chemistry","question":"pH < 7 মানে কী?","options":{"a":"ক্ষার","b":"অ্যাসিড","c":"নিরপেক্ষ","d":"লবণ"},"answer":"b"},{"id":76,"subject":"Chemistry","question":"pH = 7 কী নির্দেশ করে?","options":{"a":"অ্যাসিড","b":"ক্ষার","c":"নিরপেক্ষ","d":"লবণ"},"answer":"c"},{"id":77,"subject":"Chemistry","question":"পর্যায় সারণি প্রণেতা কে?","options":{"a":"ডাল্টন","b":"মেন্ডেলিফ","c":"রাদারফোর্ড","d":"বোর"},"answer":"b"},{"id":78,"subject":"Chemistry","question":"ইলেকট্রনের চার্জ কী?","options":{"a":"+1","b":"-1","c":"0","d":"+2"},"answer":"b"},{"id":79,"subject":"Chemistry","question":"অক্সিডেশন মানে কী?","options":{"a":"ইলেকট্রন গ্রহণ","b":"ইলেকট্রন ত্যাগ","c":"নিউট্রন গ্রহণ","d":"প্রোটন গ্রহণ"},"answer":"b"},{"id":80,"subject":"Chemistry","question":"রিডাকশন মানে কী?","options":{"a":"গ্রহণ","b":"ত্যাগ","c":"বৃদ্ধি","d":"হ্রাস"},"answer":"a"},{"id":81,"subject":"Chemistry","question":"মিথেনের সূত্র কী?","options":{"a":"CH4","b":"C2H6","c":"C3H8","d":"CH3"},"answer":"a"},{"id":82,"subject":"Chemistry","question":"ইথেনের সূত্র কী?","options":{"a":"CH4","b":"C2H6","c":"C2H4","d":"C3H8"},"answer":"b"},{"id":83,"subject":"Chemistry","question":"১ মোল = কত কণা?","options":{"a":"6.02×10^23","b":"3×10^8","c":"9.8","d":"1×10^6"},"answer":"a"},{"id":84,"subject":"Chemistry","question":"H2SO4 কী?","options":{"a":"অ্যাসিড","b":"ক্ষার","c":"লবণ","d":"অক্সাইড"},"answer":"a"},{"id":85,"subject":"Chemistry","question":"পর্যায় সারণিতে কয়টি গ্রুপ?","options":{"a":"16","b":"18","c":"20","d":"12"},"answer":"b"},{"id":86,"subject":"Chemistry","question":"নিউট্রনের চার্জ কী?","options":{"a":"+1","b":"-1","c":"0","d":"+2"},"answer":"c"},{"id":87,"subject":"Chemistry","question":"আয়নিক বন্ধন গঠিত হয়—","options":{"a":"ইলেকট্রন শেয়ার","b":"ইলেকট্রন স্থানান্তর","c":"প্রোটন","d":"নিউট্রন"},"answer":"b"},{"id":88,"subject":"Chemistry","question":"কোভ্যালেন্ট বন্ধন—","options":{"a":"শেয়ারিং","b":"ট্রান্সফার","c":"ভাঙা","d":"শোষণ"},"answer":"a"},{"id":89,"subject":"Chemistry","question":"Boyle's Law কী নির্দেশ করে?","options":{"a":"P∝V","b":"P∝1/V","c":"P∝T","d":"V∝T"},"answer":"b"},{"id":90,"subject":"Chemistry","question":"Ideal Gas Equation কোনটি?","options":{"a":"PV=nRT","b":"F=ma","c":"V=IR","d":"E=mc^2"},"answer":"a"},{"id":91,"subject":"Higher Math","question":"(a+b)^2 এর বিস্তৃতি কোনটি?","options":{"a":"a^2+b^2","b":"a^2+2ab+b^2","c":"a^2-b^2","d":"a^2+ab+b^2"},"answer":"b"},{"id":92,"subject":"Higher Math","question":"a^2 - b^2 এর factorization—","options":{"a":"(a-b)^2","b":"(a+b)(a-b)","c":"(a+b)^2","d":"a^2+b^2"},"answer":"b"},{"id":93,"subject":"Higher Math","question":"log(ab) = ?","options":{"a":"log a + log b","b":"log a - log b","c":"log a × log b","d":"log a / log b"},"answer":"a"},{"id":94,"subject":"Higher Math","question":"sin^2θ + cos^2θ = ?","options":{"a":"0","b":"1","c":"2","d":"sinθ"},"answer":"b"},{"id":95,"subject":"Higher Math","question":"tanθ = ?","options":{"a":"sinθ/cosθ","b":"cosθ/sinθ","c":"sinθ+cosθ","d":"1/sinθ"},"answer":"a"},{"id":96,"subject":"Higher Math","question":"d/dx (x^n) = ?","options":{"a":"nx^(n-1)","b":"x^n","c":"n^x","d":"1/x"},"answer":"a"},{"id":97,"subject":"Higher Math","question":"d/dx (constant) = ?","options":{"a":"1","b":"0","c":"constant","d":"x"},"answer":"b"},{"id":98,"subject":"Higher Math","question":"sinx এর derivative—","options":{"a":"cosx","b":"-cosx","c":"sinx","d":"-sinx"},"answer":"a"},{"id":99,"subject":"Higher Math","question":"cosx এর derivative—","options":{"a":"sinx","b":"-sinx","c":"cosx","d":"-cosx"},"answer":"b"},{"id":100,"subject":"Higher Math","question":"i^2 = ?","options":{"a":"1","b":"-1","c":"0","d":"i"},"answer":"b"},{"id":101,"subject":"Higher Math","question":"AP এর nতম পদ—","options":{"a":"a+(n-1)d","b":"a^n","c":"ar^n","d":"n/a"},"answer":"a"},{"id":102,"subject":"Higher Math","question":"GP এর nতম পদ—","options":{"a":"a+(n-1)d","b":"ar^(n-1)","c":"an","d":"a^n"},"answer":"b"},{"id":103,"subject":"Higher Math","question":"Distance formula কী?","options":{"a":"√(x1-x2)^2+(y1-y2)^2","b":"x1+x2","c":"y1-y2","d":"xy"},"answer":"a"},{"id":104,"subject":"Higher Math","question":"Matrix কী?","options":{"a":"number set","b":"rectangular array","c":"function","d":"equation"},"answer":"b"},{"id":105,"subject":"Higher Math","question":"2×2 determinant formula—","options":{"a":"ad-bc","b":"ab+cd","c":"ac-bd","d":"a+b+c+d"},"answer":"a"},{"id":106,"subject":"Biology","question":"Mendel পরীক্ষা করেছিলেন কোন গাছে?","options":{"a":"ধান","b":"মটরশুঁটি","c":"গম","d":"ভুট্টা"},"answer":"b"},{"id":107,"subject":"Biology","question":"DNA double helix discovered by—","options":{"a":"Mendel","b":"Watson & Crick","c":"Darwin","d":"Pasteur"},"answer":"b"},{"id":108,"subject":"Biology","question":"Monohybrid cross ratio কী?","options":{"a":"3:1","b":"9:3:3:1","c":"1:2:1","d":"2:1"},"answer":"a"},{"id":109,"subject":"Biology","question":"Dihybrid cross ratio কী?","options":{"a":"3:1","b":"9:3:3:1","c":"1:1","d":"2:1"},"answer":"b"},{"id":110,"subject":"Biology","question":"Down syndrome is due to—","options":{"a":"trisomy 21","b":"monosomy","c":"mutation","d":"deletion"},"answer":"a"},{"id":111,"subject":"Physics","question":"নিউটনের তৃতীয় সূত্র কী?","options":{"a":"F=ma","b":"ক্রিয়া-প্রতিক্রিয়া","c":"জড়তা","d":"শক্তি সংরক্ষণ"},"answer":"b"},{"id":112,"subject":"Physics","question":"নিউক্লিয়ার ফিশন কী?","options":{"a":"ভাঙন","b":"সংযোজন","c":"গ্যাস","d":"তাপ"},"answer":"a"},{"id":113,"subject":"Physics","question":"নিউক্লিয়ার ফিউশন কী?","options":{"a":"ভাঙন","b":"সংযোজন","c":"বিকিরণ","d":"শক্তি"},"answer":"b"},{"id":114,"subject":"Physics","question":"তাপগতিবিদ্যার প্রথম সূত্র কী নির্দেশ করে?","options":{"a":"শক্তি সংরক্ষণ","b":"ভর সংরক্ষণ","c":"বেগ সংরক্ষণ","d":"চাপ সংরক্ষণ"},"answer":"a"},{"id":115,"subject":"Physics","question":"আলোর বেগ সর্বোচ্চ কোথায়?","options":{"a":"বায়ু","b":"পানি","c":"শূন্যস্থান","d":"কাঁচ"},"answer":"c"},{"id":116,"subject":"Chemistry","question":"লবণ তৈরি হয় কোন বিক্রিয়ায়?","options":{"a":"অ্যাসিড + ক্ষার","b":"অ্যাসিড + পানি","c":"ক্ষার + গ্যাস","d":"পানি + লবণ"},"answer":"a"},{"id":117,"subject":"Chemistry","question":"হ্যালোজেন কোন গ্রুপে?","options":{"a":"1","b":"17","c":"18","d":"2"},"answer":"b"},{"id":118,"subject":"Chemistry","question":"ইথানল সূত্র কী?","options":{"a":"C2H5OH","b":"CH4","c":"C2H6","d":"CO2"},"answer":"a"},{"id":119,"subject":"Chemistry","question":"ইলেক্ট্রোলাইসিস কী?","options":{"a":"বিদ্যুতে বিভাজন","b":"তাপ বিভাজন","c":"চাপ বিভাজন","d":"গ্যাস"},"answer":"a"},{"id":120,"subject":"Chemistry","question":"Catalyst কী করে?","options":{"a":"গতি কমায়","b":"গতি বাড়ায়","c":"বন্ধ করে","d":"ধ্বংস করে"},"answer":"b"},{"id":121,"subject":"Higher Math","question":"Perpendicular lines slope product—","options":{"a":"1","b":"-1","c":"0","d":"2"},"answer":"b"},{"id":122,"subject":"Higher Math","question":"Dot product ফলাফল কী?","options":{"a":"vector","b":"scalar","c":"matrix","d":"tensor"},"answer":"b"},{"id":123,"subject":"Higher Math","question":"Cross product ফলাফল কী?","options":{"a":"scalar","b":"vector","c":"number","d":"angle"},"answer":"b"},{"id":124,"subject":"Higher Math","question":"Identity matrix এর diagonal—","options":{"a":"0","b":"1","c":"-1","d":"2"},"answer":"b"},{"id":125,"subject":"Higher Math","question":"Determinant শূন্য হলে matrix হয়—","options":{"a":"invertible","b":"singular","c":"identity","d":"diagonal"},"answer":"b"},{"id":126,"subject":"Biology","question":"ব্যাকটেরিয়া কী ধরনের কোষ?","options":{"a":"ইউক্যারিওটিক","b":"প্রোক্যারিওটিক","c":"মাল্টিসেলুলার","d":"টিস্যু"},"answer":"b"},{"id":127,"subject":"Biology","question":"ভাইরাস কী?","options":{"a":"জীবন্ত কোষ","b":"অজীব/আংশিক জীব","c":"ব্যাকটেরিয়া","d":"ফাঙ্গাস"},"answer":"b"},{"id":128,"subject":"Biology","question":"অ্যান্টিবায়োটিক কাজ করে—","options":{"a":"ভাইরাসে","b":"ব্যাকটেরিয়ায়","c":"উদ্ভিদে","d":"পশুতে"},"answer":"b"},{"id":129,"subject":"Biology","question":"হাড়ের প্রধান উপাদান কী?","options":{"a":"ক্যালসিয়াম","b":"লোহা","c":"সোডিয়াম","d":"পটাসিয়াম"},"answer":"a"},{"id":130,"subject":"Biology","question":"লালার এনজাইম কী?","options":{"a":"পেপসিন","b":"অ্যামাইলেজ","c":"লাইপেজ","d":"ট্রিপসিন"},"answer":"b"}];
+
+// Humanities & Commerce MCQ
+const HUM_MCQ=[{q:"বাংলা সাহিত্যের প্রথম উপন্যাস?",o:["আলালের ঘরের দুলাল","দুর্গেশনন্দিনী","গৃহদাহ","পথের পাঁচালী"],a:1,e:"বঙ্কিমচন্দ্রের 'দুর্গেশনন্দিনী' (১৮৬৫)।"},{q:"মুক্তিযুদ্ধে কতটি সেক্টর?",o:["9","10","11","12"],a:2,e:"বাংলাদেশের মুক্তিযুদ্ধে ১১টি সেক্টর।"},{q:"UN প্রতিষ্ঠিত কত সালে?",o:["1944","1945","1946","1947"],a:1,e:"জাতিসংঘ ২৪ অক্টোবর ১৯৪৫।"},{q:"বাংলাদেশের সংবিধান গৃহীত?",o:["1971","1972","1973","1974"],a:1,e:"৪ নভেম্বর ১৯৭২।"},{q:"GDP = ?",o:["Gross Domestic Product","General Development Plan","Gross Dev. Product","Global Dom. Production"],a:0,e:"GDP = Gross Domestic Product।"},{q:"বাংলাদেশের জাতীয় পাখি?",o:["কোকিল","শালিক","দোয়েল","ময়না"],a:2,e:"দোয়েল বাংলাদেশের জাতীয় পাখি।"},{q:"মুক্তিবাহিনীর সর্বাধিনায়ক?",o:["জিয়াউর রহমান","জেনারেল ওসমানী","খালেদ মোশাররফ","সফিউল্লাহ"],a:1,e:"জেনারেল এম. এ. জি. ওসমানী।"},{q:"বাংলাদেশের মোট জেলা?",o:["62","63","64","65"],a:2,e:"বাংলাদেশে ৬৪টি জেলা।"},{q:"'অগ্নিবীণা' কার?",o:["রবীন্দ্রনাথ","নজরুল","সুকান্ত","জসীমউদ্দীন"],a:1,e:"'অগ্নিবীণা' (১৯২২) নজরুলের প্রথম কাব্যগ্রন্থ।"},{q:"চাহিদা বিধি অনুযায়ী—",o:["দাম বাড়লে চাহিদা বাড়ে","দাম বাড়লে চাহিদা কমে","দাম স্থির থাকে","কোনো সম্পর্ক নেই"],a:1,e:"স্বাভাবিক পণ্যে দাম বাড়লে চাহিদা কমে।"},{q:"'সঞ্চিতা' কার?",o:["রবীন্দ্রনাথ","নজরুল","জীবনানন্দ","সুকান্ত"],a:1,e:"'সঞ্চিতা' কাজী নজরুল ইসলামের।"},{q:"ঢাকা বিশ্ববিদ্যালয় প্রতিষ্ঠিত?",o:["1921","1947","1952","1971"],a:0,e:"ঢাকা বিশ্ববিদ্যালয় ১৯২১ সালে প্রতিষ্ঠিত।"}];
+
+// ===================== HSC DATA =====================
+const SC=['#4CAF50','#2196F3','#FF9800','#009688','#F44336','#9C27B0','#FF5722'];
+const HSC={
+  science:{label:"বিজ্ঞান",subjects:{
+    "বাংলা":{ch:[{n:"সিরাজউদ্দৌলা",sz:2,p:1},{n:"অপরিচিতা",sz:2,p:1},{n:"আহ্বান",sz:1,p:2},{n:"সোনার তরী",sz:2,p:1},{n:"ফেব্রুয়ারি ১৯৬৯",sz:1,p:1},{n:"আঠারো বছর বয়স",sz:1,p:2},{n:"ব্যাকরণ ও রচনা",sz:3,p:1}]},
+    "ইংরেজি":{ch:[{n:"Reading Unit 1-2",sz:2,p:1},{n:"Reading Unit 3-4",sz:2,p:1},{n:"Grammar: Tense & Voice",sz:2,p:1},{n:"Grammar: Narration",sz:2,p:1},{n:"Writing: Paragraph",sz:2,p:1},{n:"Writing: Letter",sz:1,p:2}]},
+    "পদার্থবিজ্ঞান":{ch:[{n:"ভৌত জগৎ ও পরিমাপ",sz:1,p:3},{n:"ভেক্টর",sz:2,p:2},{n:"গতিবিদ্যা",sz:3,p:1},{n:"নিউটনের গতিসূত্র",sz:3,p:1},{n:"কাজ শক্তি ক্ষমতা",sz:2,p:1},{n:"মহাকর্ষ",sz:2,p:2},{n:"স্থির বিদ্যুৎ",sz:3,p:1},{n:"চলবিদ্যুৎ",sz:3,p:1},{n:"তাড়িতচৌম্বকতা",sz:2,p:1},{n:"ইলেকট্রনিকস",sz:2,p:1},{n:"আধুনিক পদার্থবিজ্ঞান",sz:2,p:2}]},
+    "রসায়ন":{ch:[{n:"গুণগত রসায়ন",sz:2,p:2},{n:"মৌলের পর্যায়বৃত্ত ধর্ম",sz:2,p:2},{n:"রাসায়নিক পরিবর্তন",sz:3,p:1},{n:"জৈব রসায়ন",sz:3,p:1},{n:"পরিমাণগত রসায়ন",sz:3,p:1},{n:"তড়িৎ রসায়ন",sz:2,p:2}]},
+    "জীববিজ্ঞান":{ch:[{n:"কোষ ও গঠন",sz:2,p:1},{n:"কোষ বিভাজন",sz:2,p:1},{n:"জীনতত্ত্ব ও বিবর্তন",sz:3,p:1},{n:"শ্বসন",sz:2,p:1},{n:"মানব শারীরতত্ত্ব",sz:3,p:1},{n:"উদ্ভিদের প্রজনন",sz:2,p:2},{n:"জীব প্রযুক্তি",sz:2,p:1}]},
+    "উচ্চতর গণিত":{ch:[{n:"ম্যাট্রিক্স ও নির্ণায়ক",sz:3,p:1},{n:"কনিক",sz:3,p:1},{n:"ত্রিকোণমিতি",sz:3,p:1},{n:"অবকলন",sz:3,p:1},{n:"যোগজীকরণ",sz:3,p:1},{n:"ভেক্টর",sz:2,p:2},{n:"সরলরেখা",sz:2,p:2}]},
+    "ICT":{ch:[{n:"কমিউনিকেশন সিস্টেমস",sz:2,p:1},{n:"সংখ্যা পদ্ধতি",sz:2,p:1},{n:"প্রোগ্রামিং",sz:3,p:1},{n:"ডেটাবেজ",sz:2,p:2}]}
+  }},
+  humanities:{label:"মানবিক",subjects:{
+    "বাংলা":{ch:[{n:"সিরাজউদ্দৌলা",sz:2,p:1},{n:"অপরিচিতা",sz:2,p:1},{n:"সোনার তরী",sz:2,p:1},{n:"ফেব্রুয়ারি ১৯৬৯",sz:1,p:1},{n:"ব্যাকরণ ও রচনা",sz:3,p:1}]},
+    "ইংরেজি":{ch:[{n:"Reading Unit 1-3",sz:2,p:1},{n:"Grammar: Tense & Voice",sz:2,p:1},{n:"Grammar: Narration",sz:2,p:1},{n:"Writing Skills",sz:2,p:1}]},
+    "ইতিহাস":{ch:[{n:"ব্রিটিশ আমল",sz:3,p:1},{n:"পাকিস্তান আমল",sz:2,p:1},{n:"বাংলাদেশের অভ্যুদয়",sz:3,p:1},{n:"মুক্তিযুদ্ধ ১৯৭১",sz:3,p:1},{n:"স্বাধীন বাংলাদেশ",sz:2,p:2}]},
+    "পৌরনীতি":{ch:[{n:"সংবিধান",sz:3,p:1},{n:"বাংলাদেশের সরকার",sz:3,p:1},{n:"স্থানীয় সরকার",sz:2,p:2},{n:"নির্বাচন ও গণতন্ত্র",sz:2,p:2}]},
+    "অর্থনীতি":{ch:[{n:"চাহিদা ও যোগান",sz:3,p:1},{n:"বাজার",sz:2,p:1},{n:"জাতীয় আয়",sz:3,p:1},{n:"বাংলাদেশের অর্থনীতি",sz:3,p:1}]},
+    "সমাজবিজ্ঞান":{ch:[{n:"পরিবার ও বিবাহ",sz:2,p:1},{n:"সামাজিক স্তরবিন্যাস",sz:2,p:1},{n:"বাংলাদেশের সমাজ",sz:3,p:1}]}
+  }},
+  commerce:{label:"বাণিজ্য",subjects:{
+    "বাংলা":{ch:[{n:"গদ্য ও পদ্য",sz:3,p:1},{n:"ব্যাকরণ",sz:2,p:1},{n:"রচনা",sz:2,p:1}]},
+    "ইংরেজি":{ch:[{n:"Reading Skills",sz:3,p:1},{n:"Grammar",sz:3,p:1},{n:"Writing",sz:2,p:1}]},
+    "হিসাববিজ্ঞান":{ch:[{n:"জাবেদা",sz:3,p:1},{n:"খতিয়ান",sz:3,p:1},{n:"রেওয়ামিল",sz:2,p:1},{n:"আর্থিক বিবরণী",sz:3,p:1},{n:"অংশীদারি হিসাব",sz:3,p:1},{n:"কোম্পানির হিসাব",sz:3,p:1}]},
+    "ব্যবসায় সংগঠন":{ch:[{n:"অংশীদারি ব্যবসায়",sz:3,p:1},{n:"যৌথ মূলধনী কোম্পানি",sz:3,p:1},{n:"ব্যবসায়ের পরিবেশ",sz:2,p:2}]},
+    "ফিন্যান্স ও ব্যাংকিং":{ch:[{n:"মূলধন বাজেটিং",sz:3,p:1},{n:"বাণিজ্যিক ব্যাংক",sz:3,p:1},{n:"কেন্দ্রীয় ব্যাংক",sz:2,p:1}]}
+  }}
+};
+
+// ===================== APP STATE =====================
+let ST={div:'',ss:[],sc:{},tracks:[],ci:-1,pomo:{div:'',tgt:'',dur:50,brk:12,dmin:240,tsec:0,ld:'',ptoday:0},theme:'dark'};
+(function(){try{let d=localStorage.getItem('tcv5');if(d){let p=JSON.parse(d);ST=Object.assign(ST,p);const t=new Date().toISOString().slice(0,10);if(ST.pomo.ld!==t){ST.pomo.tsec=0;ST.pomo.ptoday=0;}}}catch(e){}document.body.dataset.theme=ST.theme;})();
+const sv=()=>{try{localStorage.setItem('tcv5',JSON.stringify(ST))}catch(e){}};
+
+// THEME
+function openTheme(){document.getElementById('th-modal').classList.add('show');['dark','light','ocean','purple'].forEach(t=>{const el=document.getElementById('t-'+t);if(el)el.classList.toggle('at',ST.theme===t);});}
+function closeTh(e){if(e.target===document.getElementById('th-modal'))document.getElementById('th-modal').classList.remove('show');}
+function setTh(t){ST.theme=t;document.body.dataset.theme=t;sv();openTheme();}
+
+// NAV
+const PAGES=['home','track','today','timer','store','info','about'];
+const NAV=['home','track','today','timer','store','info'];
+function gp(p){
+  PAGES.forEach(pg=>{const el=document.getElementById('p-'+pg);if(el)el.classList.toggle('on',pg===p);});
+  document.querySelectorAll('.bni').forEach((ni,i)=>ni.classList.toggle('on',NAV[i]===p));
+  if(p==='home')rHome();else if(p==='track')rTrack();else if(p==='today')rToday();
+  else if(p==='timer')rTimer();else if(p==='store')rStore();else if(p==='info')rInfo();else if(p==='about')rAbout();
+}
+
+// SCHEDULE
+function buildSched(ss,sc,div,days){
+  let all=[];
+  ss.forEach((subj,si)=>{const chs=HSC[div].subjects[subj].ch;(sc[subj]||[]).forEach(ci=>{const ch=chs[ci];for(let pt=0;pt<ch.sz;pt++)all.push({subject:subj,si,chapter:ch.n,part:ch.sz>1?pt+1:0,tp:ch.sz,priority:ch.p,size:ch.sz,done:false});});});
+  if(!all.length)return[];
+  let byS={};all.forEach(s=>{if(!byS[s.subject])byS[s.subject]=[];byS[s.subject].push(s);});
+  const so=Object.keys(byS).sort((a,b)=>Math.min(...byS[a].map(x=>x.priority))-Math.min(...byS[b].map(x=>x.priority)));
+  so.forEach(s=>byS[s].sort((a,b)=>a.priority-b.priority||a.part-b.part));
+  let il=[];const ml=Math.max(...so.map(s=>byS[s].length));
+  for(let i=0;i<ml;i++)so.forEach(s=>{if(i<byS[s].length)il.push(byS[s][i]);});
+  const ppd=Math.ceil(il.length/days);let sched=[];const td=new Date();
+  for(let d=0;d<days;d++){const sl=il.slice(d*ppd,(d+1)*ppd);if(!sl.length)break;const dt=new Date(td);dt.setDate(td.getDate()+d);sched.push({day:d+1,ds:dt.toLocaleDateString('bn-BD'),di:dt.toISOString().slice(0,10),tasks:sl.map(s=>({...s}))});}
+  return sched;
+}
+const gT=()=>ST.ci>=0?ST.tracks[ST.ci]:ST.tracks[0];
+const gSC=(t,subj)=>SC[t.subjects.indexOf(subj)%SC.length];
+const tdN=(t)=>Math.floor((new Date(new Date().toISOString().slice(0,10))-new Date(t.si))/86400000)+1;
+const s2t=(s)=>String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');
+
+// HOME
+function rHome(){
+  const c=document.getElementById('p-home');
+  if(!ST.tracks.length){c.innerHTML=`<div class="empty"><div style="font-size:44px;margin-bottom:12px">📚</div><div style="font-size:16px;font-weight:700;color:var(--tx);margin-bottom:6px">কোনো ট্র্যাক নেই</div><p style="color:var(--tx2)">নিচের ট্র্যাক ট্যাবে গিয়ে শুরু করো</p></div>`;return;}
+  const t=gT(),tn=tdN(t),tot=t.schedule.reduce((a,d)=>a+d.tasks.length,0),dn=t.schedule.reduce((a,d)=>a+d.tasks.filter(x=>x.done).length,0),pct=tot?Math.round(dn/tot*100):0,td=t.schedule.find(d=>d.day===tn),tdd=td?td.tasks.filter(x=>x.done).length:0,tdt=td?td.tasks.length:0;
+  let h=ST.tracks.length>1?`<div class="card"><div class="sl" style="margin-top:0">সক্রিয় ট্র্যাক</div><select onchange="ST.ci=parseInt(this.value);sv();rHome()">${ST.tracks.map((tr,i)=>`<option value="${i}" ${i===ST.ci?'selected':''}>${tr.name}</option>`).join('')}</select></div>`:'';
+  h+=`<div class="stg"><div class="sb"><div class="sn">${pct}%</div><div class="slb">অগ্রগতি</div></div><div class="sb"><div class="sn">${Math.max(0,t.schedule.length-(tn-1))}</div><div class="slb">বাকি দিন</div></div><div class="sb"><div class="sn">${Math.floor((ST.pomo.tsec||0)/60)}</div><div class="slb">আজ পড়েছো (মিনিট)</div></div></div>`;
+  h+=`<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><div style="font-size:15px;font-weight:600">${t.name}</div><span class="badge bg">${HSC[t.division].label}</span></div><div class="pb"><div class="pf pfg" style="width:${pct}%"></div></div><div style="display:flex;justify-content:space-between;margin-top:5px;font-size:11px;color:var(--tx2)"><span>${dn}/${tot} সেশন</span><span>${pct}% সম্পন্ন</span></div><div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:10px">${t.subjects.map((s,i)=>`<span style="display:flex;align-items:center;gap:3px;font-size:11px;color:var(--tx2);background:var(--bg3);padding:2px 8px;border-radius:12px"><span style="width:7px;height:7px;border-radius:2px;background:${SC[i%SC.length]};display:inline-block"></span>${s}</span>`).join('')}</div></div>`;
+  if(td){const di=t.schedule.findIndex(d=>d.day===tn);h+=`<div class="card card-accent"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><div><div style="font-size:15px;font-weight:600">আজকের পড়া</div><div style="font-size:11px;color:var(--tx2);margin-top:2px">দিন ${tn} — ${td.ds}</div></div><span class="badge ${tdd===tdt&&tdt>0?'bg':'ba'}">${tdd}/${tdt} ✓</span></div>`;
+  td.tasks.forEach((task,i)=>{const col=gSC(t,task.subject);h+=`<div class="ti"><div class="tc ${task.done?'dn':''}" onclick="htT(${di},${i})">${task.done?'✓':''}</div><div class="sd" style="background:${col}"></div><div><div class="tt ${task.done?'st':''}">${task.subject} — ${task.chapter}${task.tp>1?' (পর্ব '+task.part+'/'+task.tp+')':''}</div><div style="font-size:10px;color:var(--tx3);margin-top:1px">${task.priority===1?'⚡ উচ্চ প্রায়োরিটি':task.priority===2?'📌 মাঝারি':'📖 সাধারণ'}</div></div></div>`;});
+  h+=`</div>`;}
+  c.innerHTML=h;
+}
+function htT(di,ti){const t=gT();t.schedule[di].tasks[ti].done=!t.schedule[di].tasks[ti].done;sv();rHome();}
+
+// TRACK
+function rTrack(){
+  const c=document.getElementById('p-track');
+  let h=`<div class="card"><div class="ct">✨ নতুন স্টাডি ট্র্যাক</div><div class="sl" style="margin-top:0">বিভাগ</div>
+  <select id="dv" onchange="onDv()"><option value="">-- বিভাগ বেছে নাও --</option><option value="science" ${ST.div==='science'?'selected':''}>বিজ্ঞান বিভাগ</option><option value="humanities" ${ST.div==='humanities'?'selected':''}>মানবিক বিভাগ</option><option value="commerce" ${ST.div==='commerce'?'selected':''}>ব্যবসায় শিক্ষা</option></select>`;
+  if(ST.div){
+    h+=`<div class="sl">বিষয়</div><div class="sg">${Object.keys(HSC[ST.div].subjects).map(s=>`<div class="sc ${ST.ss.includes(s)?'on':''}" onclick="tgSj('${s}')">${s}</div>`).join('')}</div>`;
+    if(ST.ss.length){
+      h+=`<div class="sl">অধ্যায় <span style="font-weight:400">(⚡উচ্চ 📌মাঝারি 📖সাধারণ)</span></div><div class="chs">`;
+      ST.ss.forEach(subj=>{const chs=HSC[ST.div].subjects[subj].ch;if(!ST.sc[subj])ST.sc[subj]=chs.map((_,i)=>i);
+      h+=`<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:.5px solid var(--bd)"><span style="font-size:13px;font-weight:700;color:var(--tx)">${subj}</span><span style="font-size:11px;color:var(--ac);cursor:pointer" onclick="tgAll('${subj}')">সব/বাতিল</span></div>`;
+      chs.forEach((ch,i)=>{const chk=ST.sc[subj]&&ST.sc[subj].includes(i);const pi=ch.p===1?'⚡':ch.p===2?'📌':'📖';const sz=ch.sz===3?'বড়':ch.sz===2?'মাঝারি':'ছোট';
+      h+=`<div class="chi"><input type="checkbox" ${chk?'checked':''} onchange="tgCh('${subj}',${i})"><span style="flex:1">${ch.n}</span><span style="font-size:10px;margin-left:3px">${pi}</span><span style="font-size:10px;color:var(--tx3);margin-left:4px">[${sz}]</span></div>`;});h+=`</div>`;});h+=`</div>`;
+    }
+  }
+  h+=`<div class="g2"><div><div class="sl" style="margin-top:0">মোট দিন</div><input type="number" id="di" min="7" max="365" value="30"></div><div><div class="sl" style="margin-top:0">ঘণ্টা/দিন</div><input type="number" id="hi" min="1" max="14" value="4"></div></div>
+  <div class="sl">ট্র্যাকের নাম</div><input type="text" id="tn" placeholder="HSC ফাইনাল প্রস্তুতি ২০২৫">
+  <button class="btn btp" onclick="doGen()">🚀 ট্র্যাক তৈরি করো</button></div>`;
+  if(ST.tracks.length){h+=`<div class="card"><div class="ct">📋 আমার ট্র্যাকসমূহ</div>`;
+  ST.tracks.forEach((tr,i)=>{const tot=tr.schedule.reduce((a,d)=>a+d.tasks.length,0),dn=tr.schedule.reduce((a,d)=>a+d.tasks.filter(x=>x.done).length,0),pct=tot?Math.round(dn/tot*100):0;
+  h+=`<div style="padding:10px 0;border-bottom:.5px solid var(--bd)"><div style="display:flex;justify-content:space-between;align-items:center"><div style="font-size:13px;font-weight:600">${tr.name}</div><div style="display:flex;gap:6px;align-items:center">${i===ST.ci?'<span class="badge bg">সক্রিয়</span>':''}<span style="font-size:11px;color:var(--ac);cursor:pointer;font-weight:500" onclick="ST.ci=${i};sv();gp('home')">→ সক্রিয় করো</span></div></div><div class="pb" style="margin-top:6px"><div class="pf pfg" style="width:${pct}%"></div></div><div style="font-size:11px;color:var(--tx2);margin-top:3px">${dn}/${tot} সেশন · ${HSC[tr.division].label} · ${pct}%</div></div>`;});
+  h+=`</div>`;}
+  c.innerHTML=h;
+}
+function onDv(){ST.div=document.getElementById('dv').value;ST.ss=[];ST.sc={};rTrack();}
+function tgSj(s){const i=ST.ss.indexOf(s);if(i>=0){ST.ss.splice(i,1);delete ST.sc[s];}else ST.ss.push(s);rTrack();}
+function tgAll(subj){const chs=HSC[ST.div].subjects[subj].ch;ST.sc[subj]=(ST.sc[subj]&&ST.sc[subj].length===chs.length)?[]:chs.map((_,i)=>i);rTrack();}
+function tgCh(subj,i){if(!ST.sc[subj])ST.sc[subj]=[];const pos=ST.sc[subj].indexOf(i);if(pos>=0)ST.sc[subj].splice(pos,1);else ST.sc[subj].push(i);}
+function doGen(){
+  if(!ST.div){alert('বিভাগ সিলেক্ট করো');return;}if(!ST.ss.length){alert('অন্তত একটি বিষয় সিলেক্ট করো');return;}
+  if(!ST.ss.some(s=>ST.sc[s]&&ST.sc[s].length>0)){alert('অন্তত একটি অধ্যায় সিলেক্ট করো');return;}
+  const days=parseInt(document.getElementById('di').value)||30,name=document.getElementById('tn').value||'আমার স্টাডি ট্র্যাক';
+  const sched=buildSched(ST.ss,ST.sc,ST.div,days);if(!sched.length){alert('শিডিউল তৈরি হয়নি');return;}
+  const tot=sched.reduce((a,d)=>a+d.tasks.length,0);
+  ST.tracks.push({id:Date.now(),name,division:ST.div,subjects:[...ST.ss],schedule:sched,si:new Date().toISOString().slice(0,10)});
+  ST.ci=ST.tracks.length-1;sv();
+  alert(`✅ ট্র্যাক তৈরি!\n${sched.length} দিন · ${tot} সেশন\nপ্রতিদিন মিক্স বিষয় + প্রায়োরিটি অনুযায়ী সাজানো।`);gp('home');
+}
+
+// TODAY
+function rToday(){
+  const c=document.getElementById('p-today');
+  if(!ST.tracks.length){c.innerHTML=`<div class="empty"><p>প্রথমে ট্র্যাক তৈরি করো</p></div>`;return;}
+  const t=gT(),tn=tdN(t);let h='';
+  t.schedule.forEach((day,di)=>{
+    const dn=day.tasks.filter(x=>x.done).length,tot=day.tasks.length,isTd=day.day===tn,all=dn===tot&&tot>0;
+    h+=`<div class="dc ${isTd?'tdy':''}"><div class="dh"><div style="display:flex;align-items:center;gap:8px"><div style="min-width:30px;height:30px;border-radius:10px;background:${isTd?'var(--ac)':all?'var(--acl)':'var(--bg3)'};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:${isTd?'#fff':all?'var(--act)':'var(--tx2)'}">${day.day}</div><div><div style="font-size:13px;font-weight:600">${day.ds}${isTd?' <span style="color:var(--ac);font-size:11px">← আজ</span>':''}</div><div style="font-size:11px;color:var(--tx2)">${[...new Set(day.tasks.map(t=>t.subject))].join(' · ')}</div></div></div><span class="badge ${all?'bg':isTd?'ba':'bb'}">${dn}/${tot}</span></div>
+    <div class="pb" style="margin-bottom:8px"><div class="pf pfg" style="width:${tot?Math.round(dn/tot*100):0}%"></div></div>`;
+    day.tasks.forEach((task,ti)=>{const col=gSC(t,task.subject);h+=`<div class="ti"><div class="tc ${task.done?'dn':''}" onclick="sTk(${di},${ti})">${task.done?'✓':''}</div><div class="sd" style="background:${col}"></div><div class="tt ${task.done?'st':''}">${task.subject}: ${task.chapter}${task.tp>1?' পর্ব '+task.part+'/'+task.tp:''}</div></div>`;});
+    h+=`</div>`;});
+  c.innerHTML=h;
+}
+function sTk(di,ti){const t=gT();t.schedule[di].tasks[ti].done=!t.schedule[di].tasks[ti].done;sv();rToday();}
+
+// ============ POMODORO + MCQ ============
+let PM={phase:'idle',timer:null,rem:0,brem:0,bt:null,mt:null,mrem:0,mlim:35,curQ:null,mans:false,mok:0,mtot:0,used:[]};
+
+function rTimer(){if(PM.phase==='study')rStudy();else if(PM.phase==='break')rBreak();else rTSetup();}
+function rTSetup(){
+  const p=ST.pomo;const td=new Date().toISOString().slice(0,10);if(p.ld!==td){p.tsec=0;p.ptoday=0;sv();}
+  let aH='';
+  if(p.div==='science')aH=`<div class="sl">ভর্তির লক্ষ্য</div><div class="chipw"><div class="chip ${p.tgt==='medical'?'on':''}" onclick="setTgt('medical')">মেডিকেল</div><div class="chip ${p.tgt==='engineering'?'on':''}" onclick="setTgt('engineering')">BUET/ইঞ্জিনিয়ারিং</div><div class="chip ${p.tgt==='university'?'on':''}" onclick="setTgt('university')">বিশ্ববিদ্যালয়</div></div>`;
+  document.getElementById('p-timer').innerHTML=`<div class="card"><div class="ct">⏱ Pomodoro টাইমার</div>
+  <div class="sl" style="margin-top:0">তোমার বিভাগ</div>
+  <select onchange="ST.pomo.div=this.value;ST.pomo.tgt='';sv();rTimer()"><option value="">-- বিভাগ --</option><option value="science" ${p.div==='science'?'selected':''}>বিজ্ঞান</option><option value="humanities" ${p.div==='humanities'?'selected':''}>মানবিক</option><option value="commerce" ${p.div==='commerce'?'selected':''}>ব্যবসায়</option></select>
+  ${aH}
+  <div class="sl">সেশন দৈর্ঘ্য</div>
+  <div class="chipw">${[[25,'২৫'],[30,'৩০'],[45,'৪৫'],[50,'৫০ ✓'],[60,'৬০']].map(([v,l])=>`<div class="chip ${p.dur===v?'on':''}" onclick="setDur(${v})">${l} মিনিট</div>`).join('')}</div>
+  <div class="sl">দৈনিক টার্গেট</div>
+  <select onchange="ST.pomo.dmin=parseInt(this.value);sv()">${[[120,'২ ঘণ্টা'],[180,'৩ ঘণ্টা'],[240,'৪ ঘণ্টা ✓'],[300,'৫ ঘণ্টা'],[360,'৬ ঘণ্টা']].map(([v,l])=>`<option value="${v}" ${p.dmin===v?'selected':''}>${l}</option>`).join('')}</select>
+  <div style="background:var(--bg3);border-radius:var(--rs);padding:12px;margin:10px 0;font-size:12px;color:var(--tx2);border:.5px solid var(--bd)">💡 ব্রেকে MCQ পপআপ হবে · একই প্রশ্ন বারবার আসবে না · ব্রেক: ${p.dur<=30?'৫–৭':'১০–১৫'} মিনিট</div>
+  <button class="btn btp" onclick="startP()">▶ টাইমার শুরু করো</button>
+  ${p.tsec>0?`<div style="text-align:center;margin-top:12px;font-size:13px;color:var(--tx2)">আজ পড়েছো: <strong style="color:var(--act)">${Math.floor(p.tsec/60)} মিনিট</strong> · ${p.ptoday}টি পোমো সম্পন্ন</div>`:''}
+  </div>`;
+}
+function setTgt(t){ST.pomo.tgt=t;sv();rTimer();}
+function setDur(v){ST.pomo.dur=v;ST.pomo.brk=v<=30?6:12;sv();rTimer();}
+function startP(){
+  if(!ST.pomo.div){alert('বিভাগ সিলেক্ট করো');return;}
+  if(ST.pomo.div==='science'&&!ST.pomo.tgt){alert('ভর্তির লক্ষ্য সিলেক্ট করো');return;}
+  PM.phase='study';PM.rem=ST.pomo.dur*60;PM.used=[];rStudy();runST();
+}
+function rStudy(){
+  const p=ST.pomo,pct=Math.min(100,Math.round(p.tsec/(p.dmin*60)*100)),sp=Math.round((1-PM.rem/(p.dur*60))*100);
+  const dots=Array.from({length:Math.max(4,p.ptoday+2)},(_,i)=>`<div class="pd ${i<p.ptoday?'dnd':i===p.ptoday?'acd':''}"></div>`).join('');
+  document.getElementById('p-timer').innerHTML=`<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><span class="badge bg">📖 পড়ার সময়</span><span style="font-size:12px;color:var(--tx2);font-weight:500">পোমো #${p.ptoday+1}</span></div>
+  <div class="pdots">${dots}</div>
+  <div class="tw"><div class="tn" id="td">${s2t(PM.rem)}</div><div class="tph">${p.dur} মিনিটের সেশন চলছে</div></div>
+  <div class="pb" style="margin-bottom:4px"><div class="pf pfg" id="tsb" style="width:${sp}%"></div></div>
+  <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--tx2);margin-bottom:14px;margin-top:4px"><span>সেশন অগ্রগতি</span><span>${sp}%</span></div>
+  <div class="stg"><div class="sb"><div class="sn">${Math.floor(p.tsec/60)}</div><div class="slb">আজ (মিনিট)</div></div><div class="sb"><div class="sn">${Math.max(0,p.dmin-Math.floor(p.tsec/60))}</div><div class="slb">টার্গেট বাকি</div></div><div class="sb"><div class="sn">${p.ptoday}</div><div class="slb">পোমো ✓</div></div></div>
+  <div class="sl">দৈনিক লক্ষ্য (${p.dmin} মিনিট)</div><div class="pb"><div class="pf pfg" style="width:${pct}%"></div></div>
+  <div style="text-align:right;font-size:11px;color:var(--tx2);margin-top:3px;margin-bottom:14px">${pct}%</div>
+  <button class="btn btd" onclick="stopP()">⏹ বন্ধ করো ও সেভ করো</button></div>`;
+}
+function runST(){
+  clearInterval(PM.timer);PM.timer=setInterval(()=>{
+    PM.rem--;ST.pomo.tsec++;ST.pomo.ld=new Date().toISOString().slice(0,10);sv();
+    const el=document.getElementById('td'),bar=document.getElementById('tsb');
+    if(el)el.textContent=s2t(PM.rem);
+    if(bar)bar.style.width=Math.round((1-PM.rem/(ST.pomo.dur*60))*100)+'%';
+    if(PM.rem<=0){clearInterval(PM.timer);ST.pomo.ptoday++;sv();sN('Topper\'s Cave ⏰','পোমো #'+ST.pomo.ptoday+' শেষ! ব্রেক নাও।');startBrk();}
+  },1000);
+}
+function stopP(){clearInterval(PM.timer);clearInterval(PM.bt);clearInterval(PM.mt);PM.phase='idle';closeMCQ();rTimer();}
+
+// MCQ SYSTEM
+function getMCQPool(){
+  if(ST.pomo.div==='science')return SCIENCE_MCQ.map((q,i)=>({...q,idx:i}));
+  return HUM_MCQ.map((q,i)=>({q:q.q,o:q.o,a:q.a,e:q.e,id:i+1000,idx:i+1000}));
+}
+function startBrk(){
+  PM.phase='break';PM.brem=ST.pomo.brk*60;PM.mans=false;PM.used=[];PM.mok=0;PM.mtot=0;
+  rBreak();runBT();nxQ();
+}
+function rBreak(){
+  // Timer stays visible, MCQ pops up as overlay
+  const p=ST.pomo;
+  document.getElementById('p-timer').innerHTML=`<div class="card" style="border-color:var(--am)"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><span class="badge ba">☕ ব্রেক টাইম</span><span style="font-size:18px;font-weight:700;color:var(--am)" id="bcd">${s2t(PM.brem)}</span></div>
+  <div style="text-align:center;padding:20px 0"><div style="font-size:40px;margin-bottom:8px">🧠</div><div style="font-size:14px;color:var(--tx2)">MCQ প্র্যাকটিস চলছে...</div><div style="font-size:12px;color:var(--tx3);margin-top:4px">সঠিক: <strong id="msc" style="color:var(--act)">${PM.mok}</strong> / ${PM.mtot}</div></div>
+  <div class="stg" style="margin-bottom:10px"><div class="sb"><div class="sn">${ST.pomo.ptoday}</div><div class="slb">পোমো সম্পন্ন</div></div><div class="sb"><div class="sn">${Math.floor(ST.pomo.tsec/60)}</div><div class="slb">মোট মিনিট</div></div><div class="sb"><div class="sn" id="brk-pct">0%</div><div class="slb">MCQ সঠিক</div></div></div>
+  <button class="btn btp" onclick="endBE()">📖 ব্রেক শেষ, পড়তে বসো →</button></div>`;
+}
+function runBT(){clearInterval(PM.bt);PM.bt=setInterval(()=>{PM.brem--;const el=document.getElementById('bcd');if(el)el.textContent=s2t(PM.brem);if(PM.brem<=0){clearInterval(PM.bt);clearInterval(PM.mt);closeMCQ();endBrk();}},1000);}
+
+function showMCQ(){
+  const q=PM.curQ;if(!q)return;
+  const keys=['a','b','c','d'];
+  const opts=q.options?keys.map(k=>q.options[k]):q.o;
+  const ansKey=q.answer||keys[q.a];
+  const ansIdx=q.answer?keys.indexOf(q.answer):q.a;
+  const subj=q.subject||'';
+  document.getElementById('mcq-overlay').style.display='block';
+  document.getElementById('mcq-overlay').innerHTML=`<div class="mcq-overlay" onclick="">
+  <div class="mcq-sheet">
+    <div class="mcq-hdr">
+      <span class="badge bb">${subj}</span>
+      <div style="display:flex;align-items:center;gap:8px"><span class="badge ba">${PM.mtot+1}টি প্রশ্ন</span><span style="font-size:13px;font-weight:700;color:var(--am)" id="mtc">${PM.mrem}s</span></div>
+    </div>
+    <div class="mcq-tbar"><div class="mcq-tfill" id="mtf" style="width:100%"></div></div>
+    <div class="mcq-q">${q.question||q.q}</div>
+    <div class="mcq-opts">${opts.map((o,i)=>`<button class="mcq-opt" id="op${i}" onclick="ansQ(${i})">${String.fromCharCode(65+i)}. ${o}</button>`).join('')}</div>
+    <div id="mres"></div>
+  </div></div>`;
+}
+function closeMCQ(){document.getElementById('mcq-overlay').style.display='none';document.getElementById('mcq-overlay').innerHTML='';}
+
+function nxQ(){
+  clearInterval(PM.mt);
+  const pool=getMCQPool();
+  PM.mlim=ST.pomo.tgt==='engineering'?60:35;
+  let av=pool.filter(q=>!PM.used.includes(q.id||q.idx));
+  if(!av.length){PM.used=[];av=pool;}
+  const q=av[Math.floor(Math.random()*av.length)];
+  PM.used.push(q.id||q.idx);PM.curQ=q;PM.mans=false;PM.mrem=PM.mlim;
+  showMCQ();
+  PM.mt=setInterval(()=>{PM.mrem--;const bar=document.getElementById('mtf'),cnt=document.getElementById('mtc');if(bar)bar.style.width=Math.round(PM.mrem/PM.mlim*100)+'%';if(cnt)cnt.textContent=PM.mrem+'s';if(PM.mrem<=0&&!PM.mans){clearInterval(PM.mt);aRev();}},1000);
+}
+function ansQ(chosen){
+  if(PM.mans)return;clearInterval(PM.mt);PM.mans=true;PM.mtot++;
+  const q=PM.curQ;
+  const keys=['a','b','c','d'];
+  const ansIdx=q.answer?keys.indexOf(q.answer):q.a;
+  const ok=chosen===ansIdx;if(ok)PM.mok++;
+  document.querySelectorAll('.mcq-opt').forEach((b,i)=>{b.disabled=true;if(i===ansIdx)b.classList.add('ok');else if(i===chosen&&!ok)b.classList.add('ng');});
+  const res=document.getElementById('mres');
+  const exp=q.e||q.explanation||'';
+  if(res)res.innerHTML=`<div class="mcq-res ${ok?'mrok':'mrng'}">${ok?'✅ সঠিক উত্তর!':'❌ ভুল। সঠিক: '+String.fromCharCode(65+ansIdx)+'. '+(q.options?q.options[keys[ansIdx]]:q.o[ansIdx])}${exp?'<br><span style="font-size:11px;opacity:.85;font-weight:400">'+exp+'</span>':''}</div>`;
+  const sc=document.getElementById('msc');if(sc)sc.textContent=PM.mok;
+  const pp=document.getElementById('brk-pct');if(pp)pp.textContent=PM.mtot?Math.round(PM.mok/PM.mtot*100)+'%':'0%';
+  setTimeout(()=>{if(PM.brem>0&&PM.phase==='break')nxQ();},2500);
+}
+function aRev(){
+  if(PM.mans)return;PM.mans=true;PM.mtot++;
+  const q=PM.curQ;const keys=['a','b','c','d'];const ansIdx=q.answer?keys.indexOf(q.answer):q.a;
+  document.querySelectorAll('.mcq-opt').forEach((b,i)=>{b.disabled=true;if(i===ansIdx)b.classList.add('rv');});
+  const res=document.getElementById('mres');
+  if(res)res.innerHTML=`<div class="mcq-res mrng">⏱ সময় শেষ! সঠিক: ${String.fromCharCode(65+ansIdx)}. ${q.options?q.options[keys[ansIdx]]:q.o[ansIdx]}</div>`;
+  const pp=document.getElementById('brk-pct');if(pp)pp.textContent=PM.mtot?Math.round(PM.mok/PM.mtot*100)+'%':'0%';
+  setTimeout(()=>{if(PM.brem>0&&PM.phase==='break')nxQ();},2500);
+}
+function endBrk(){closeMCQ();PM.phase='study';PM.rem=ST.pomo.dur*60;sN('Topper\'s Cave 📖','নতুন পোমোডোরো শুরু!');rStudy();runST();}
+function endBE(){clearInterval(PM.bt);clearInterval(PM.mt);endBrk();}
+function sN(title,body){try{if(typeof AndroidBridge!=='undefined')AndroidBridge.showNotification(title,body);else if(typeof Notification!=='undefined'&&Notification.permission==='granted')new Notification(title,{body});}catch(e){}}
+try{if(typeof Notification!=='undefined'&&Notification.permission==='default')Notification.requestPermission();}catch(e){}
+
+// STORE HOUSE
+function rStore(){
+  document.getElementById('p-store').innerHTML=`
+  <div style="margin-bottom:16px">
+    <div style="font-size:20px;font-weight:800;background:linear-gradient(135deg,var(--act),var(--bl));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:4px">📦 Store House</div>
+    <div style="font-size:13px;color:var(--tx2)">তোমার পড়াশোনার সেরা রিসোর্স একসাথে</div>
+  </div>
+  <a href="https://aapathshala.com" target="_blank" class="store-card store-card-1" onclick="openLink('https://aapathshala.com')">
+    <div class="store-icon">🎯</div>
+    <div class="store-title">আপাঠশালা</div>
+    <ul class="store-features">
+      <li>→ আনলিমিটেড এক্সাম</li>
+      <li>→ প্রশ্ন ব্যাংক</li>
+      <li>→ দাগানো বই</li>
+      <li>→ অনলাইন লাইব্রেরী</li>
+    </ul>
+    <div class="store-badge">aapathshala.com →</div>
+    <div class="store-arrow">›</div>
+  </a>
+  <a href="https://drive.google.com/folderview?id=18sW1HXeq-T8tTTkYoZo69vyrWctYhe8W" target="_blank" class="store-card store-card-2" onclick="openLink('https://drive.google.com/folderview?id=18sW1HXeq-T8tTTkYoZo69vyrWctYhe8W')">
+    <div class="store-icon">📂</div>
+    <div class="store-title">Special Archive</div>
+    <ul class="store-features">
+      <li>→ বিশেষ নোটস ও গাইড</li>
+      <li>→ এক্সক্লুসিভ মেটেরিয়াল</li>
+      <li>→ Google Drive কালেকশন</li>
+    </ul>
+    <div class="store-badge" style="background:rgba(255,255,255,.15)">Google Drive →</div>
+    <div class="store-arrow">›</div>
+  </a>`;
+}
+function openLink(url){
+  try{if(typeof AndroidBridge!=='undefined'&&AndroidBridge.openUrl)AndroidBridge.openUrl(url);else window.open(url,'_blank');}catch(e){window.open(url,'_blank');}
+}
+
+// INFO
+function rInfo(){document.getElementById('p-info').innerHTML=`
+<div class="card"><div class="ct">📋 HSC পরীক্ষার তথ্য</div>
+  <div class="ir"><span class="ik">বোর্ড</span><span>বাংলাদেশ মাধ্যমিক ও উচ্চমাধ্যমিক শিক্ষা বোর্ড</span></div>
+  <div class="ir"><span class="ik">পরীক্ষার সময়</span><span>সাধারণত এপ্রিল–মে</span></div>
+  <div class="ir"><span class="ik">পাসমার্ক</span><span>প্রতি বিষয়ে ৩৩</span></div>
+  <div class="ir"><span class="ik">সর্বোচ্চ GPA</span><span>৫.০০</span></div>
+</div>
+<div class="card"><div class="ct">📝 প্রশ্নপত্রের ধরন</div>
+  <div class="ir"><span class="ik">MCQ</span><span>৩০টি, ৩০ নম্বর, ৩০ মিনিট</span></div>
+  <div class="ir"><span class="ik">সৃজনশীল</span><span>৭টি উত্তর, ৭০ নম্বর, ২.৩০ ঘণ্টা</span></div>
+  <div class="ir"><span class="ik">ব্যবহারিক</span><span>বিজ্ঞান বিভাগে ২৫ নম্বর</span></div>
+</div>
+<div class="card"><div class="ct">🎓 ভর্তি পরীক্ষা</div>
+  <div class="ir"><span class="ik">ঢাবি</span><span>ক/খ/গ/ঘ/ঙ ইউনিট আলাদা পরীক্ষা</span></div>
+  <div class="ir"><span class="ik">BUET</span><span>পদার্থ + রসায়ন + গণিত</span></div>
+  <div class="ir"><span class="ik">মেডিকেল</span><span>জীববিজ্ঞান + রসায়ন + পদার্থ + ইংরেজি + GK</span></div>
+  <div class="ir"><span class="ik">GST গুচ্ছ</span><span>একসাথে অনেক বিশ্ববিদ্যালয়</span></div>
+</div>
+<div class="card"><div class="ct">📊 গ্রেডিং সিস্টেম</div>
+  <div class="gg">
+    <div class="gbox"><div style="font-size:18px;font-weight:700;color:var(--act)">A+</div><div style="font-size:10px;color:var(--tx2)">৮০–১০০</div></div>
+    <div class="gbox"><div style="font-size:18px;font-weight:700;color:var(--act)">A</div><div style="font-size:10px;color:var(--tx2)">৭০–৭৯</div></div>
+    <div class="gbox"><div style="font-size:18px;font-weight:700;color:var(--bl)">A-</div><div style="font-size:10px;color:var(--tx2)">৬০–৬৯</div></div>
+    <div class="gbox"><div style="font-size:18px;font-weight:700;color:var(--am)">B</div><div style="font-size:10px;color:var(--tx2)">৫০–৫৯</div></div>
+    <div class="gbox"><div style="font-size:18px;font-weight:700;color:var(--am)">C</div><div style="font-size:10px;color:var(--tx2)">৪০–৪৯</div></div>
+    <div class="gbox"><div style="font-size:18px;font-weight:700;color:var(--rd)">D</div><div style="font-size:10px;color:var(--tx2)">৩৩–৩৯</div></div>
+  </div>
+</div>`;}
+
+// ABOUT
+function rAbout(){document.getElementById('p-about').innerHTML=`<div class="ab-center">
+  <div class="ab-logo"><svg width="40" height="40" viewBox="0 0 40 40" fill="none"><path d="M7 10h26M7 20h18M7 30h22" stroke="white" stroke-width="3" stroke-linecap="round"/></svg></div>
+  <div style="font-size:32px;font-weight:800;background:linear-gradient(135deg,var(--act),var(--bl));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-family:serif;margin-bottom:4px">Topper's Cave</div>
+  <div style="font-size:13px;color:var(--tx2);margin-bottom:28px">HSC Study Tracker · Bangladesh Board</div>
+  <div class="card" style="text-align:left;max-width:320px;margin:0 auto 16px">
+    <div class="ir"><span class="ik">নির্মাতা</span><span style="font-weight:700;font-size:16px;background:linear-gradient(135deg,var(--act),var(--bl));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Hamim</span></div>
+    <div class="ir"><span class="ik">ভার্সন</span><span>1.0.0</span></div>
+    <div class="ir"><span class="ik">প্ল্যাটফর্ম</span><span>Android</span></div>
+    <div class="ir"><span class="ik">MCQ ব্যাংক</span><span>১৩০+ বিজ্ঞান প্রশ্ন</span></div>
+  </div>
+  <div style="font-size:12px;color:var(--tx3)">বাংলাদেশের HSC শিক্ষার্থীদের জন্য তৈরি 🇧🇩</div>
+</div>`;}
+
+// INIT
+setTimeout(()=>{document.getElementById('splash').classList.add('out');},2500);
+rHome();
+</script>
+</body>
+</html>
